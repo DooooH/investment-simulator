@@ -58,25 +58,25 @@
     class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display overflow-hidden h-screen flex flex-col">
     <!-- Header -->
     <header
-        class="flex-none flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark bg-surface-dark px-6 py-0 z-20 h-14">
-        <div class="flex items-center gap-8 text-white h-full">
-            <div class="flex items-center gap-3">
-                <div class="size-6 text-primary">
+        class="flex-none flex items-center justify-between whitespace-nowrap border-b border-solid border-border-dark bg-surface-dark px-4 sm:px-6 py-0 z-20 h-14">
+        <div class="flex items-center gap-4 sm:gap-8 text-white h-full">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="size-6 text-primary flex items-center justify-center">
                     <span class="material-symbols-outlined text-[24px]">ssid_chart</span>
                 </div>
-                <h2 class="text-white text-lg font-bold leading-tight tracking-[-0.015em]">투자 시뮬레이터</h2>
+                <h2 class="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">투자 시뮬레이터</h2>
             </div>
 
             <!-- Navigation -->
-            <nav class="flex h-full ml-4 space-x-6">
+            <nav class="flex h-full space-x-2 sm:space-x-6">
                 <button id="nav-stock"
-                    class="nav-tab active h-full px-2 text-sm font-medium text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">show_chart</span>
+                    class="nav-tab active h-full px-1 sm:px-2 text-xs sm:text-sm font-medium text-white flex items-center gap-1 sm:gap-2">
+                    <span class="material-symbols-outlined text-[16px] sm:text-[18px]">show_chart</span>
                     주식 투자
                 </button>
                 <button id="nav-real-estate"
-                    class="nav-tab h-full px-2 text-sm font-medium text-gray-400 flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px]">home_work</span>
+                    class="nav-tab h-full px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-400 flex items-center gap-1 sm:gap-2">
+                    <span class="material-symbols-outlined text-[16px] sm:text-[18px]">home_work</span>
                     부동산 vs 주식
                 </button>
             </nav>
