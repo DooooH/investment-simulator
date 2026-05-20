@@ -27,11 +27,17 @@ const elements = {
     tableBody: document.getElementById('tableBody'),
     initialAmountFormatted: document.getElementById('initialAmountFormatted'),
     monthlyContributionFormatted: document.getElementById('monthlyContributionFormatted'),
-    periodDisplay: document.getElementById('periodDisplay')
+    periodDisplay: document.getElementById('periodDisplay'),
+    downloadStockChartBtn: document.getElementById('downloadStockChartBtn'),
+    downloadStockCSVBtn: document.getElementById('downloadStockCSVBtn')
 };
 
 // 차트 인스턴스
 let growthChart = null;
+
+// 시뮬레이션 결과 데이터 캐시용 전역 변수
+let currentStockData = null;
+let currentREData = null;
 
 /**
  * 숫자를 한국 원화 형식으로 포맷
@@ -69,16 +75,63 @@ function formatPercent(value) {
 }
 
 /**
+ * CSV 파일 다운로드 헬퍼
+ */
+function downloadCSV(filename, csvContent) {
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+/**
+ * Chart.js 차트를 이미지로 다운로드 (다크 테마 배경 유지)
+ */
+function downloadChartImage(chartInstance, filename) {
+    if (!chartInstance) return;
+    
+    const originalCanvas = chartInstance.canvas;
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = originalCanvas.width;
+    tempCanvas.height = originalCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    // Webull 다크 테마 표면색(#151a1e)으로 배경 칠하기
+    tempCtx.fillStyle = '#151a1e';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // 원본 차트를 임시 캔버스에 그리기
+    tempCtx.drawImage(originalCanvas, 0, 0);
+    
+    // 이미지 다운로드 실행
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = tempCanvas.toDataURL('image/png');
+    link.click();
+}
+
+/**
  * 입력값 유효성 검사 및 가져오기
  */
 function getInputValues() {
+    let period = parseInt(elements.investmentPeriod.value);
+    if (isNaN(period) || period < 1) period = 1;
+    if (period > 50) period = 50;
+
     return {
         initialAmount: parseFloat(elements.initialAmount.value) || 0,
         monthlyContribution: parseFloat(elements.monthlyContribution.value) || 0,
         contributionGrowth: parseFloat(elements.contributionGrowth.value) || 0,
         annualReturn: parseFloat(elements.annualReturn.value) || 0,
         inflationRate: parseFloat(elements.inflationRate.value) || 0,
-        investmentPeriod: parseInt(elements.investmentPeriod.value) || 1
+        investmentPeriod: period
     };
 }
 
@@ -373,6 +426,7 @@ function updateFormattedValues() {
 function runCalculation() {
     const params = getInputValues();
     const data = calculateInvestment(params);
+    currentStockData = data;
 
     updateSummaryCards(data);
     updateChart(data);
@@ -399,22 +453,36 @@ function resetForm() {
  * 이벤트 리스너 설정
  */
 function setupEventListeners() {
-    // 계산 버튼 클릭
+    // 계산 버튼 클릭 (기존 버튼도 호환성을 위해 유지)
     elements.calculateBtn.addEventListener('click', runCalculation);
 
     // 초기화 버튼 클릭
     elements.resetBtn.addEventListener('click', resetForm);
 
-    // 금액 입력 필드 실시간 포맷 업데이트
-    elements.initialAmount.addEventListener('input', updateFormattedValues);
-    elements.monthlyContribution.addEventListener('input', updateFormattedValues);
+    // 주식 관련 인풋들의 input 이벤트 통합 등록
+    const stockInputs = [
+        elements.initialAmount,
+        elements.monthlyContribution,
+        elements.contributionGrowth,
+        elements.annualReturn,
+        elements.inflationRate,
+        elements.investmentPeriod
+    ];
 
-    // 투자 기간 슬라이더 실시간 업데이트
-    elements.investmentPeriod.addEventListener('input', () => {
-        elements.periodDisplay.innerHTML = `${elements.investmentPeriod.value}<span class="text-sm font-normal text-gray-400 ml-1">년</span>`;
+    stockInputs.forEach(input => {
+        if (!input) return;
+        input.addEventListener('input', () => {
+            if (input === elements.initialAmount || input === elements.monthlyContribution) {
+                updateFormattedValues();
+            }
+            if (input === elements.investmentPeriod) {
+                elements.periodDisplay.innerHTML = `${elements.investmentPeriod.value}<span class="text-sm font-normal text-gray-400 ml-1">년</span>`;
+            }
+            runCalculation();
+        });
     });
 
-    // Enter 키로 계산
+    // Enter 키로 계산 (기존 유지)
     document.querySelectorAll('#stock-section input').forEach(input => {
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -422,6 +490,25 @@ function setupEventListeners() {
             }
         });
     });
+
+    // 다운로드 버튼 이벤트 바인딩
+    if (elements.downloadStockCSVBtn) {
+        elements.downloadStockCSVBtn.addEventListener('click', () => {
+            if (!currentStockData || currentStockData.length <= 1) return;
+            let csv = "연차,월 투자금,누적 원금,명목 자산,실질 자산,수익률\n";
+            currentStockData.slice(1).forEach(d => {
+                const rateText = `${d.returnRate.toFixed(1)}%`;
+                csv += `${d.year}년차,${Math.round(d.monthlyContribution)},${Math.round(d.totalInvested)},${Math.round(d.nominalBalance)},${Math.round(d.realBalance)},${rateText}\n`;
+            });
+            downloadCSV("주식_투자_시뮬레이션_결과.csv", csv);
+        });
+    }
+
+    if (elements.downloadStockChartBtn) {
+        elements.downloadStockChartBtn.addEventListener('click', () => {
+            downloadChartImage(growthChart, "자산_성장_그래프.png");
+        });
+    }
 }
 
 /**
@@ -484,7 +571,9 @@ const reElements = {
     houseBar: document.getElementById('houseBar'),
 
     // Charts & Tables
-    compTableBody: document.getElementById('compTableBody')
+    compTableBody: document.getElementById('compTableBody'),
+    downloadCompChartBtn: document.getElementById('downloadCompChartBtn'),
+    downloadCompCSVBtn: document.getElementById('downloadCompCSVBtn')
 };
 
 // State
@@ -592,7 +681,11 @@ function calculateRealEstateScenario() {
     const housePrice = parseFloat(reElements.housePrice.value) || 0;
     const loanAmount = parseFloat(reElements.loanAmount.value) || 0;
     const loanRate = parseFloat(reElements.loanRate.value) || 0;
-    const loanPeriod = parseFloat(reElements.loanPeriod.value) || 0;
+    
+    let loanPeriod = parseInt(reElements.loanPeriod.value);
+    if (isNaN(loanPeriod) || loanPeriod < 1) loanPeriod = 1;
+    if (loanPeriod > 50) loanPeriod = 50;
+
     const appreciationRate = parseFloat(reElements.appreciationRate.value) || 0;
 
     // Derived Values
@@ -789,6 +882,7 @@ function updateComparisonResults(data) {
 
 function runRealEstateCalculation() {
     const data = calculateRealEstateScenario();
+    currentREData = data;
     updateComparisonChart(data);
     updateComparisonResults(data);
 }
@@ -836,15 +930,32 @@ function setupRealEstateEventListeners() {
     // Inputs
     ['housePrice', 'loanAmount', 'loanRate', 'loanPeriod', 'compStockReturn'].forEach(id => {
         const el = reElements[id];
-        if (el) el.addEventListener('input', updateFormattedREValues);
+        if (el) {
+            el.addEventListener('input', () => {
+                updateFormattedREValues();
+                runRealEstateCalculation();
+            });
+        }
     });
 
     // Appreciation Rate Dual Input
-    reElements.appreciationRate.addEventListener('input', () => handleDualInput('rate'));
-    reElements.targetPrice.addEventListener('input', () => handleDualInput('target'));
+    reElements.appreciationRate.addEventListener('input', () => {
+        handleDualInput('rate');
+        runRealEstateCalculation();
+    });
+    reElements.targetPrice.addEventListener('input', () => {
+        handleDualInput('target');
+        runRealEstateCalculation();
+    });
 
-    reElements.tabRate.addEventListener('click', () => switchAppreciationTab('rate'));
-    reElements.tabTarget.addEventListener('click', () => switchAppreciationTab('target'));
+    reElements.tabRate.addEventListener('click', () => {
+        switchAppreciationTab('rate');
+        runRealEstateCalculation();
+    });
+    reElements.tabTarget.addEventListener('click', () => {
+        switchAppreciationTab('target');
+        runRealEstateCalculation();
+    });
 
     // Action
     reElements.calcRealEstateBtn.addEventListener('click', runRealEstateCalculation);
@@ -855,6 +966,25 @@ function setupRealEstateEventListeners() {
             runRealEstateCalculation();
         }
     });
+
+    // 다운로드 버튼 이벤트 바인딩
+    if (reElements.downloadCompCSVBtn) {
+        reElements.downloadCompCSVBtn.addEventListener('click', () => {
+            if (!currentREData || currentREData.length <= 1) return;
+            let csv = "년차,부동산 순자산,주식 자산,격차,주택가치\n";
+            currentREData.slice(1).forEach(d => {
+                const diffVal = d.reNetWorth - d.stockBalance;
+                csv += `${d.year}년,${Math.round(d.reNetWorth)},${Math.round(d.stockBalance)},${Math.round(diffVal)},${Math.round(d.houseValue)}\n`;
+            });
+            downloadCSV("부동산_vs_주식_비교_시뮬레이션_결과.csv", csv);
+        });
+    }
+
+    if (reElements.downloadCompChartBtn) {
+        reElements.downloadCompChartBtn.addEventListener('click', () => {
+            downloadChartImage(comparisonChart, "자산_비교_분석_그래프.png");
+        });
+    }
 }
 
 // DOM 로드 완료 후 초기화 (통합)
