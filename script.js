@@ -394,9 +394,9 @@ function updateSummaryCards(data) {
     const totalProfitVal = finalData.nominalBalance - finalData.totalInvested;
     elements.totalProfit.textContent = formatShortCurrency(totalProfitVal);
 
-    // 월평균 투자금
+    // 월평균 투자금 (초기 일시금 제외)
     const totalMonths = periodYears * 12;
-    const avgMonthlyVal = totalMonths > 0 ? finalData.totalInvested / totalMonths : 0;
+    const avgMonthlyVal = totalMonths > 0 ? (finalData.totalInvested - initialParams.initialAmount) / totalMonths : 0;
     elements.avgMonthly.textContent = formatShortCurrency(avgMonthlyVal);
 
     // 프로그레스 바 width
