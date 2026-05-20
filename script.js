@@ -353,12 +353,12 @@ function updateTable(data) {
 
     elements.tableBody.innerHTML = tableData.map(d => `
         <tr class="hover:bg-white/5 transition-colors">
-            <td class="p-3 text-center text-gray-400">${d.year}년차</td>
-            <td class="p-3 text-right text-gray-300">${formatShortCurrency(d.monthlyContribution)}</td>
-            <td class="p-3 text-right text-gray-300">${formatShortCurrency(d.totalInvested)}</td>
-            <td class="p-3 text-right font-medium" style="color: #10b981;">${formatShortCurrency(d.nominalBalance)}</td>
-            <td class="p-3 text-right font-medium" style="color: #f59e0b;">${formatShortCurrency(d.realBalance)}</td>
-            <td class="p-3 text-right font-medium" style="color: ${d.returnRate >= 0 ? '#ec4899' : '#ef4444'};">
+            <td class="p-3 text-center text-gray-400 whitespace-nowrap">${d.year}년차</td>
+            <td class="p-3 text-right text-gray-300 whitespace-nowrap">${formatShortCurrency(d.monthlyContribution)}</td>
+            <td class="p-3 text-right text-gray-300 whitespace-nowrap">${formatShortCurrency(d.totalInvested)}</td>
+            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #10b981;">${formatShortCurrency(d.nominalBalance)}</td>
+            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #f59e0b;">${formatShortCurrency(d.realBalance)}</td>
+            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: ${d.returnRate >= 0 ? '#ec4899' : '#ef4444'};">
                 ${formatPercent(d.returnRate)}
             </td>
         </tr>
@@ -870,11 +870,11 @@ function updateComparisonResults(data) {
         const sign = diffVal >= 0 ? '+' : '-';
         return `
         <tr class="hover:bg-white/5 transition-colors border-b border-white/5">
-            <td class="p-3 text-center text-gray-400">${d.year}년</td>
-            <td class="p-3 text-right font-medium text-accent-green">${formatShortCurrency(d.reNetWorth)}</td>
-            <td class="p-3 text-right font-medium text-accent-blue">${formatShortCurrency(d.stockBalance)}</td>
-            <td class="p-3 text-right ${diffClass}">${sign} ${formatShortCurrency(Math.abs(diffVal))}</td>
-            <td class="p-3 text-right text-gray-500">${formatShortCurrency(d.houseValue)}</td>
+            <td class="p-3 text-center text-gray-400 whitespace-nowrap">${d.year}년</td>
+            <td class="p-3 text-right font-medium text-accent-green whitespace-nowrap">${formatShortCurrency(d.reNetWorth)}</td>
+            <td class="p-3 text-right font-medium text-accent-blue whitespace-nowrap">${formatShortCurrency(d.stockBalance)}</td>
+            <td class="p-3 text-right ${diffClass} whitespace-nowrap">${sign} ${formatShortCurrency(Math.abs(diffVal))}</td>
+            <td class="p-3 text-right text-gray-500 whitespace-nowrap">${formatShortCurrency(d.houseValue)}</td>
         </tr>
         `;
     }).join('');

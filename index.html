@@ -305,7 +305,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex-1 relative w-full h-full">
+                    <div class="flex-1 relative w-full h-[320px] lg:h-full">
                         <canvas id="growthChart"></canvas>
                     </div>
                 </div>
@@ -319,30 +319,30 @@
                         </button>
                     </div>
                     <div class="overflow-auto flex-1">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full min-w-[650px] text-left border-collapse">
                             <thead class="bg-surface-dark sticky top-0 z-10 shadow-sm">
                                 <tr>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-center w-16">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-center w-16 whitespace-nowrap">
                                         연차</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right whitespace-nowrap">
                                         월 투자금</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right whitespace-nowrap">
                                         누적 원금</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right text-accent-green">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right text-accent-green whitespace-nowrap">
                                         명목 자산</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right text-accent-orange">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right text-accent-orange whitespace-nowrap">
                                         실질 자산</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right whitespace-nowrap">
                                         수익률</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="text-sm font-mono divide-y divide-border-dark/50">
+                            <tbody id="tableBody" class="text-xs md:text-sm font-mono divide-y divide-border-dark/50">
                             </tbody>
                         </table>
                     </div>
@@ -613,7 +613,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex-1 relative w-full h-full">
+                    <div class="flex-1 relative w-full h-[320px] lg:h-full">
                         <canvas id="comparisonChart"></canvas>
                     </div>
                 </div>
@@ -627,23 +627,23 @@
                         </button>
                     </div>
                     <div class="overflow-auto flex-1">
-                        <table class="w-full text-left border-collapse">
+                        <table class="w-full min-w-[650px] text-left border-collapse">
                             <thead class="bg-surface-dark sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-center w-14">년차</th>
+                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-center w-14 whitespace-nowrap">년차</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-green">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-green whitespace-nowrap">
                                         부동산 (순)</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-blue">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-blue whitespace-nowrap">
                                         주식 자산</th>
-                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-right">격차</th>
+                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-right whitespace-nowrap">격차</th>
                                     <th
-                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-gray-500">
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-gray-500 whitespace-nowrap">
                                         주택가치</th>
                                 </tr>
                             </thead>
-                            <tbody id="compTableBody" class="text-sm font-mono divide-y divide-border-dark/50">
+                            <tbody id="compTableBody" class="text-xs md:text-sm font-mono divide-y divide-border-dark/50">
                             </tbody>
                         </table>
                     </div>

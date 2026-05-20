@@ -103,3 +103,8 @@ input[type="range"]::-moz-range-thumb:hover {
     transform: scale(1.2);
     background: #00db5b;
 }
+
+/* Touch scrolling momentum for mobile device */
+.overflow-auto, .overflow-y-auto, .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+}
