@@ -13,6 +13,7 @@ const elements = {
     investmentPeriod: document.getElementById('investmentPeriod'),
     holdingPeriod: document.getElementById('holdingPeriod'),
     holdingDisplay: document.getElementById('holdingDisplay'),
+    holdingMaxDisplay: document.getElementById('holdingMaxDisplay'),
     holdingInfo: document.getElementById('holdingInfo'),
     resetBtn: document.getElementById('resetBtn'),
     finalNominal: document.getElementById('finalNominal'),
@@ -379,10 +380,19 @@ function updateChart(data) {
             chartCtx.stroke();
 
             // 라벨 텍스트 그리기
+            const labelText = '적립 중단 (거치 시작)';
             chartCtx.fillStyle = '#ff9800';
             chartCtx.font = '11px Inter, sans-serif';
-            chartCtx.textAlign = 'right';
-            chartCtx.fillText('적립 중단 (거치 시작) ', xPos - 6, yAxis.top + 18);
+            const textWidth = chartCtx.measureText(labelText).width;
+            
+            // xPos가 Y축 눈금선 영역(차트 왼쪽 경계)보다 텍스트 크기만큼 더 왼쪽에 가까워지면 라벨을 오른쪽에 렌더링
+            if (xPos - textWidth - 10 < chart.chartArea.left) {
+                chartCtx.textAlign = 'left';
+                chartCtx.fillText(' ' + labelText, xPos + 6, yAxis.top + 18);
+            } else {
+                chartCtx.textAlign = 'right';
+                chartCtx.fillText(labelText + ' ', xPos - 6, yAxis.top + 18);
+            }
             chartCtx.restore();
         }
     };
@@ -509,6 +519,11 @@ function updateHoldingUI() {
     
     // max 설정 변경
     elements.holdingPeriod.max = maxHolding;
+    
+    // 최대값 표시 텍스트 변경
+    if (elements.holdingMaxDisplay) {
+        elements.holdingMaxDisplay.textContent = `${maxHolding}년`;
+    }
     
     // 현재 값이 max를 넘지 않도록 조정
     let currentHolding = parseInt(elements.holdingPeriod.value) || 0;

@@ -4,7 +4,7 @@
 
 <head>
     <script>
-        window.addEventListener('error', function(e) {
+        window.addEventListener('error', function (e) {
             const errDiv = document.createElement('div');
             errDiv.style.position = 'fixed';
             errDiv.style.top = '0';
@@ -23,7 +23,7 @@
     </script>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>투자 시뮬레이터 - Webull Style</title>
+    <title>투자 시뮬레이터</title>
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
@@ -82,7 +82,8 @@
                 <div class="size-6 text-primary flex items-center justify-center">
                     <span class="material-symbols-outlined text-[24px]">ssid_chart</span>
                 </div>
-                <h2 class="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">투자 시뮬레이터</h2>
+                <h2 class="text-white text-base sm:text-lg font-bold leading-tight tracking-[-0.015em] hidden sm:block">
+                    투자 시뮬레이터</h2>
             </div>
 
             <!-- Navigation -->
@@ -108,7 +109,8 @@
     </header>
 
     <!-- Main Layout: Stock Investment Simulator -->
-    <div id="stock-section" class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden transition-display opacity-100">
+    <div id="stock-section"
+        class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden transition-display opacity-100">
         <!-- Left Sidebar (Inputs) -->
         <aside
             class="w-full md:w-[320px] flex-none bg-surface-dark border-b md:border-b-0 md:border-r border-border-dark flex flex-col overflow-y-auto z-10">
@@ -207,10 +209,11 @@
                                 <span class="text-xs text-gray-500">0년</span>
                                 <span class="text-white font-mono font-bold text-lg" id="holdingDisplay">0<span
                                         class="text-sm font-normal text-gray-400 ml-1">년</span></span>
-                                <span class="text-xs text-gray-500">49년</span>
+                                <span class="text-xs text-gray-500" id="holdingMaxDisplay">49년</span>
                             </div>
                             <p class="text-[10px] text-gray-400 mt-2 text-center" id="holdingInfo">
-                                전체 20년 중 <span class="text-primary font-semibold">20년 적립</span> → <span class="text-accent-orange font-semibold">0년 거치</span>
+                                전체 20년 중 <span class="text-primary font-semibold">20년 적립</span> → <span
+                                    class="text-accent-orange font-semibold">0년 거치</span>
                             </p>
                         </div>
                     </div>
@@ -226,7 +229,8 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col h-auto md:h-full overflow-y-visible md:overflow-hidden bg-background-dark relative">
+        <main
+            class="flex-1 flex flex-col h-auto md:h-full overflow-y-visible md:overflow-hidden bg-background-dark relative">
             <!-- Top Summary Cards -->
             <div class="flex-none p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Card 1: Nominal -->
@@ -321,7 +325,8 @@
                                 <span class="material-symbols-outlined text-gray-400">show_chart</span>
                                 자산 성장 그래프
                             </h3>
-                            <button id="downloadStockChartBtn" class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
+                            <button id="downloadStockChartBtn"
+                                class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
                                 <span class="material-symbols-outlined text-[14px]">download</span>
                                 이미지 저장
                             </button>
@@ -349,7 +354,8 @@
                 <div class="glass-panel rounded-lg flex flex-col overflow-hidden min-h-[350px] lg:min-h-0 lg:flex-[2]">
                     <div class="p-4 border-b border-border-dark flex justify-between items-center bg-surface-dark/50">
                         <h3 class="text-white font-semibold">연도별 상세 내역</h3>
-                        <button id="downloadStockCSVBtn" class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
+                        <button id="downloadStockCSVBtn"
+                            class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
                             <span class="material-symbols-outlined text-[14px]">table_view</span>
                             CSV 다운로드
                         </button>
@@ -388,7 +394,8 @@
     </div>
 
     <!-- Main Layout: Real Estate Comparison (Hidden by default) -->
-    <div id="real-estate-section" class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden transition-display opacity-0 hidden">
+    <div id="real-estate-section"
+        class="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden transition-display opacity-0 hidden">
         <!-- Left Sidebar (Real Estate Inputs) -->
         <aside
             class="w-full md:w-[320px] flex-none bg-surface-dark border-b md:border-b-0 md:border-r border-border-dark flex flex-col overflow-y-auto z-10">
@@ -529,15 +536,18 @@
 
                 <div class="mt-auto pt-4 border-t border-border-dark">
                     <!-- 비교 조건 설명 -->
-                    <p class="text-[11px] text-gray-400 text-center leading-relaxed bg-[#0b0e11]/30 p-3 rounded-lg border border-border-dark/30">
-                        <span class="text-primary font-semibold">Tip</span>: 입력값을 수정하면 즉시 비교 분석이 실행됩니다. 부동산 투자금과 동일한 금액이 주식 투자 시뮬레이션에 자동으로 적용됩니다.
+                    <p
+                        class="text-[11px] text-gray-400 text-center leading-relaxed bg-[#0b0e11]/30 p-3 rounded-lg border border-border-dark/30">
+                        <span class="text-primary font-semibold">Tip</span>: 입력값을 수정하면 즉시 비교 분석이 실행됩니다. 부동산 투자금과 동일한 금액이
+                        주식 투자 시뮬레이션에 자동으로 적용됩니다.
                     </p>
                 </div>
             </div>
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col h-auto md:h-full overflow-y-visible md:overflow-hidden bg-background-dark relative">
+        <main
+            class="flex-1 flex flex-col h-auto md:h-full overflow-y-visible md:overflow-hidden bg-background-dark relative">
             <!-- Top Summary Cards -->
             <div class="flex-none p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Card 1: Net Worth Logic -->
@@ -624,7 +634,8 @@
                                 <span class="material-symbols-outlined text-gray-400">compare_arrows</span>
                                 자산 비교 분석
                             </h3>
-                            <button id="downloadCompChartBtn" class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
+                            <button id="downloadCompChartBtn"
+                                class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
                                 <span class="material-symbols-outlined text-[14px]">download</span>
                                 이미지 저장
                             </button>
@@ -652,7 +663,8 @@
                 <div class="glass-panel rounded-lg flex flex-col overflow-hidden min-h-[350px] lg:min-h-0 lg:flex-[2]">
                     <div class="p-4 border-b border-border-dark flex justify-between items-center bg-surface-dark/50">
                         <h3 class="text-white font-semibold">비교 상세 내역</h3>
-                        <button id="downloadCompCSVBtn" class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
+                        <button id="downloadCompCSVBtn"
+                            class="flex items-center gap-1 text-[11px] text-gray-400 hover:text-white bg-card-dark hover:bg-border-dark px-2 py-1.5 rounded border border-border-dark transition-colors">
                             <span class="material-symbols-outlined text-[14px]">table_view</span>
                             CSV 다운로드
                         </button>
@@ -661,20 +673,25 @@
                         <table class="w-full min-w-[650px] text-left border-collapse">
                             <thead class="bg-surface-dark sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-center w-14 whitespace-nowrap">년차</th>
+                                    <th
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-center w-14 whitespace-nowrap">
+                                        년차</th>
                                     <th
                                         class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-green whitespace-nowrap">
                                         부동산 (순)</th>
                                     <th
                                         class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-accent-blue whitespace-nowrap">
                                         주식 자산</th>
-                                    <th class="p-3 text-xs font-medium text-gray-400 uppercase text-right whitespace-nowrap">격차</th>
+                                    <th
+                                        class="p-3 text-xs font-medium text-gray-400 uppercase text-right whitespace-nowrap">
+                                        격차</th>
                                     <th
                                         class="p-3 text-xs font-medium text-gray-400 uppercase text-right text-gray-500 whitespace-nowrap">
                                         주택가치</th>
                                 </tr>
                             </thead>
-                            <tbody id="compTableBody" class="text-xs md:text-sm font-mono divide-y divide-border-dark/50">
+                            <tbody id="compTableBody"
+                                class="text-xs md:text-sm font-mono divide-y divide-border-dark/50">
                             </tbody>
                         </table>
                     </div>
