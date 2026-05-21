@@ -518,6 +518,8 @@ function init() {
     setupEventListeners();
     updateFormattedValues();
     runCalculation();
+    // 초기 로딩 후 차트 크기가 정상 비율로 잡히도록 강제 리사이즈 트리거
+    setTimeout(() => { if (growthChart) growthChart.resize(); }, 100);
 }
 
 // ==========================================

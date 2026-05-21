@@ -108,3 +108,9 @@ input[type="range"]::-moz-range-thumb:hover {
 .overflow-auto, .overflow-y-auto, .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
 }
+
+/* Chart canvas size control to prevent infinite growth on mobile */
+canvas {
+    max-height: 100% !important;
+    width: 100% !important;
+}
