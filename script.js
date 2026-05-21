@@ -354,14 +354,17 @@ function updateChart(data) {
         id: 'verticalLine',
         afterDraw: (chart) => {
             const params = getInputValues();
-            if (params.holdingPeriod <= 0) return;
+            if (!params || params.holdingPeriod <= 0) return;
 
             const contributionYears = params.investmentPeriod - params.holdingPeriod;
             if (contributionYears <= 0) return;
 
             const chartCtx = chart.ctx;
-            const xAxis = chart.scales.x;
-            const yAxis = chart.scales.y;
+            if (!chartCtx) return;
+
+            const xAxis = chart.scales ? chart.scales.x : null;
+            const yAxis = chart.scales ? chart.scales.y : null;
+            if (!xAxis || !yAxis) return;
             
             const xPos = xAxis.getPixelForValue(contributionYears);
             if (xPos === undefined || isNaN(xPos)) return;
@@ -1078,9 +1081,15 @@ function setupRealEstateEventListeners() {
 }
 
 // DOM 로드 완료 후 초기화 (통합)
-document.addEventListener('DOMContentLoaded', () => {
+const startInit = () => {
     init(); // 기존 주식 초기화
     setupRealEstateEventListeners();
     updateFormattedREValues();
     handleDualInput('rate');
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startInit);
+} else {
+    startInit();
+}
