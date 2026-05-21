@@ -11,7 +11,9 @@ const elements = {
     annualReturn: document.getElementById('annualReturn'),
     inflationRate: document.getElementById('inflationRate'),
     investmentPeriod: document.getElementById('investmentPeriod'),
-    calculateBtn: document.getElementById('calculateBtn'),
+    holdingPeriod: document.getElementById('holdingPeriod'),
+    holdingDisplay: document.getElementById('holdingDisplay'),
+    holdingInfo: document.getElementById('holdingInfo'),
     resetBtn: document.getElementById('resetBtn'),
     finalNominal: document.getElementById('finalNominal'),
     nominalGrowth: document.getElementById('nominalGrowth'),
@@ -125,13 +127,18 @@ function getInputValues() {
     if (isNaN(period) || period < 1) period = 1;
     if (period > 50) period = 50;
 
+    let holding = parseInt(elements.holdingPeriod.value) || 0;
+    if (holding < 0) holding = 0;
+    if (holding >= period) holding = period - 1; // 최소 1년은 적립해야 함
+
     return {
         initialAmount: parseFloat(elements.initialAmount.value) || 0,
         monthlyContribution: parseFloat(elements.monthlyContribution.value) || 0,
         contributionGrowth: parseFloat(elements.contributionGrowth.value) || 0,
         annualReturn: parseFloat(elements.annualReturn.value) || 0,
         inflationRate: parseFloat(elements.inflationRate.value) || 0,
-        investmentPeriod: period
+        investmentPeriod: period,
+        holdingPeriod: holding
     };
 }
 
@@ -145,7 +152,8 @@ function calculateInvestment(params) {
         contributionGrowth,
         annualReturn,
         inflationRate,
-        investmentPeriod
+        investmentPeriod,
+        holdingPeriod
     } = params;
 
     const monthlyReturnRate = Math.pow(1 + annualReturn / 100, 1 / 12) - 1;
@@ -163,21 +171,28 @@ function calculateInvestment(params) {
         totalInvested: initialAmount,
         nominalBalance: initialAmount,
         realBalance: initialAmount,
-        returnRate: 0
+        returnRate: 0,
+        isHolding: false
     });
+
+    const contributionYears = investmentPeriod - holdingPeriod;
 
     // 각 연도별 계산
     for (let year = 1; year <= investmentPeriod; year++) {
         let yearlyContribution = 0;
+        const isHoldingYear = year > contributionYears;
 
         // 월별 복리 계산
         for (let month = 1; month <= 12; month++) {
             // 월 수익 적용
             balance = balance * (1 + monthlyReturnRate);
-            // 월 적립금 추가
-            balance += currentMonthlyContribution;
-            yearlyContribution += currentMonthlyContribution;
-            totalInvested += currentMonthlyContribution;
+            
+            // 거치 기간이 아닐 때만 월 적립금 추가
+            if (!isHoldingYear) {
+                balance += currentMonthlyContribution;
+                yearlyContribution += currentMonthlyContribution;
+                totalInvested += currentMonthlyContribution;
+            }
         }
 
         // 실질 가치 계산 (인플레이션 반영)
@@ -185,20 +200,23 @@ function calculateInvestment(params) {
         const realBalance = balance / inflationFactor;
 
         // 수익률 계산
-        const returnRate = ((balance - totalInvested) / totalInvested) * 100;
+        const returnRate = totalInvested > 0 ? ((balance - totalInvested) / totalInvested) * 100 : 0;
 
         yearlyData.push({
             year,
-            monthlyContribution: currentMonthlyContribution,
+            monthlyContribution: isHoldingYear ? 0 : currentMonthlyContribution,
             yearlyContribution,
             totalInvested,
             nominalBalance: balance,
             realBalance,
-            returnRate
+            returnRate,
+            isHolding: isHoldingYear
         });
 
-        // 다음 해 월 투자금 증가 적용
-        currentMonthlyContribution = currentMonthlyContribution * (1 + contributionGrowth / 100);
+        // 거치 기간이 아닐 때만 다음 해 월 투자금 증가 적용
+        if (!isHoldingYear) {
+            currentMonthlyContribution = currentMonthlyContribution * (1 + contributionGrowth / 100);
+        }
     }
 
     return yearlyData;
@@ -331,6 +349,41 @@ function updateChart(data) {
         }
     };
 
+    // 거치 시작선(수직 점선) 표시 플러그인
+    const verticalLinePlugin = {
+        id: 'verticalLine',
+        afterDraw: (chart) => {
+            const params = getInputValues();
+            if (params.holdingPeriod <= 0) return;
+
+            const contributionYears = params.investmentPeriod - params.holdingPeriod;
+            if (contributionYears <= 0) return;
+
+            const chartCtx = chart.ctx;
+            const xAxis = chart.scales.x;
+            const yAxis = chart.scales.y;
+            
+            const xPos = xAxis.getPixelForValue(contributionYears);
+            if (xPos === undefined || isNaN(xPos)) return;
+
+            chartCtx.save();
+            chartCtx.beginPath();
+            chartCtx.setLineDash([5, 5]);
+            chartCtx.lineWidth = 1.5;
+            chartCtx.strokeStyle = '#ff9800'; // accent-orange
+            chartCtx.moveTo(xPos, yAxis.top);
+            chartCtx.lineTo(xPos, yAxis.bottom);
+            chartCtx.stroke();
+
+            // 라벨 텍스트 그리기
+            chartCtx.fillStyle = '#ff9800';
+            chartCtx.font = '11px Inter, sans-serif';
+            chartCtx.textAlign = 'right';
+            chartCtx.fillText('적립 중단 (거치 시작) ', xPos - 6, yAxis.top + 18);
+            chartCtx.restore();
+        }
+    };
+
     if (growthChart) {
         growthChart.data = chartData;
         growthChart.options = options;
@@ -339,7 +392,8 @@ function updateChart(data) {
         growthChart = new Chart(ctx, {
             type: 'line',
             data: chartData,
-            options
+            options,
+            plugins: [verticalLinePlugin]
         });
     }
 }
@@ -351,18 +405,28 @@ function updateTable(data) {
     // 0년차 제외하고 표시
     const tableData = data.slice(1);
 
-    elements.tableBody.innerHTML = tableData.map(d => `
-        <tr class="hover:bg-white/5 transition-colors">
-            <td class="p-3 text-center text-gray-400 whitespace-nowrap">${d.year}년차</td>
-            <td class="p-3 text-right text-gray-300 whitespace-nowrap">${formatShortCurrency(d.monthlyContribution)}</td>
-            <td class="p-3 text-right text-gray-300 whitespace-nowrap">${formatShortCurrency(d.totalInvested)}</td>
-            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #10b981;">${formatShortCurrency(d.nominalBalance)}</td>
-            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #f59e0b;">${formatShortCurrency(d.realBalance)}</td>
-            <td class="p-3 text-right font-medium whitespace-nowrap" style="color: ${d.returnRate >= 0 ? '#ec4899' : '#ef4444'};">
-                ${formatPercent(d.returnRate)}
-            </td>
-        </tr>
-    `).join('');
+    elements.tableBody.innerHTML = tableData.map(d => {
+        const rowClass = d.isHolding ? 'bg-orange-500/[0.03] hover:bg-orange-500/[0.08]' : 'hover:bg-white/5';
+        const contributionText = d.isHolding 
+            ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-accent-orange/20 text-accent-orange">거치</span>`
+            : formatShortCurrency(d.monthlyContribution);
+
+        return `
+            <tr class="${rowClass} transition-colors border-b border-border-dark/30">
+                <td class="p-3 text-center text-gray-400 whitespace-nowrap">
+                    ${d.year}년차
+                    ${d.isHolding ? '<span class="material-symbols-outlined text-[14px] text-accent-orange align-middle ml-1">lock</span>' : ''}
+                </td>
+                <td class="p-3 text-right text-gray-300 whitespace-nowrap">${contributionText}</td>
+                <td class="p-3 text-right text-gray-300 whitespace-nowrap">${formatShortCurrency(d.totalInvested)}</td>
+                <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #10b981;">${formatShortCurrency(d.nominalBalance)}</td>
+                <td class="p-3 text-right font-medium whitespace-nowrap" style="color: #f59e0b;">${formatShortCurrency(d.realBalance)}</td>
+                <td class="p-3 text-right font-medium whitespace-nowrap" style="color: ${d.returnRate >= 0 ? '#ec4899' : '#ef4444'};">
+                    ${formatPercent(d.returnRate)}
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 /**
@@ -434,6 +498,30 @@ function runCalculation() {
 }
 
 /**
+ * 거치 기간 UI 업데이트 및 동적 최대값 제어
+ */
+function updateHoldingUI() {
+    const period = parseInt(elements.investmentPeriod.value) || 20;
+    const maxHolding = period - 1;
+    
+    // max 설정 변경
+    elements.holdingPeriod.max = maxHolding;
+    
+    // 현재 값이 max를 넘지 않도록 조정
+    let currentHolding = parseInt(elements.holdingPeriod.value) || 0;
+    if (currentHolding > maxHolding) {
+        currentHolding = maxHolding;
+        elements.holdingPeriod.value = currentHolding;
+    }
+    
+    // 디스플레이 업데이트
+    elements.holdingDisplay.innerHTML = `${currentHolding}<span class="text-sm font-normal text-gray-400 ml-1">년</span>`;
+    
+    const contrib = period - currentHolding;
+    elements.holdingInfo.innerHTML = `전체 ${period}년 중 <span class="text-primary font-semibold">${contrib}년 적립</span> → <span class="text-accent-orange font-semibold">${currentHolding}년 거치</span>`;
+}
+
+/**
  * 입력 폼 리셋
  */
 function resetForm() {
@@ -443,8 +531,10 @@ function resetForm() {
     elements.annualReturn.value = 7;
     elements.inflationRate.value = 3;
     elements.investmentPeriod.value = 20;
+    elements.holdingPeriod.value = 0;
 
     elements.periodDisplay.innerHTML = `20<span class="text-sm font-normal text-gray-400 ml-1">년</span>`;
+    updateHoldingUI();
     updateFormattedValues();
     runCalculation();
 }
@@ -453,9 +543,6 @@ function resetForm() {
  * 이벤트 리스너 설정
  */
 function setupEventListeners() {
-    // 계산 버튼 클릭 (기존 버튼도 호환성을 위해 유지)
-    elements.calculateBtn.addEventListener('click', runCalculation);
-
     // 초기화 버튼 클릭
     elements.resetBtn.addEventListener('click', resetForm);
 
@@ -466,7 +553,8 @@ function setupEventListeners() {
         elements.contributionGrowth,
         elements.annualReturn,
         elements.inflationRate,
-        elements.investmentPeriod
+        elements.investmentPeriod,
+        elements.holdingPeriod
     ];
 
     stockInputs.forEach(input => {
@@ -477,6 +565,10 @@ function setupEventListeners() {
             }
             if (input === elements.investmentPeriod) {
                 elements.periodDisplay.innerHTML = `${elements.investmentPeriod.value}<span class="text-sm font-normal text-gray-400 ml-1">년</span>`;
+                updateHoldingUI();
+            }
+            if (input === elements.holdingPeriod) {
+                updateHoldingUI();
             }
             runCalculation();
         });
@@ -498,7 +590,8 @@ function setupEventListeners() {
             let csv = "연차,월 투자금,누적 원금,명목 자산,실질 자산,수익률\n";
             currentStockData.slice(1).forEach(d => {
                 const rateText = `${d.returnRate.toFixed(1)}%`;
-                csv += `${d.year}년차,${Math.round(d.monthlyContribution)},${Math.round(d.totalInvested)},${Math.round(d.nominalBalance)},${Math.round(d.realBalance)},${rateText}\n`;
+                const contributionVal = d.isHolding ? 0 : d.monthlyContribution;
+                csv += `${d.year}년차,${Math.round(contributionVal)},${Math.round(d.totalInvested)},${Math.round(d.nominalBalance)},${Math.round(d.realBalance)},${rateText}\n`;
             });
             downloadCSV("주식_투자_시뮬레이션_결과.csv", csv);
         });
@@ -517,6 +610,7 @@ function setupEventListeners() {
 function init() {
     setupEventListeners();
     updateFormattedValues();
+    updateHoldingUI();
     runCalculation();
     // 초기 로딩 후 차트 크기가 정상 비율로 잡히도록 강제 리사이즈 트리거
     setTimeout(() => { if (growthChart) growthChart.resize(); }, 100);
@@ -559,9 +653,6 @@ const reElements = {
     // Auto-calculated Readonly
     requiredDownPayment: document.getElementById('requiredDownPayment'),
     monthlyMortgage: document.getElementById('monthlyMortgage'),
-
-    // Action
-    calcRealEstateBtn: document.getElementById('calcRealEstateBtn'),
 
     // Results
     reNetWorth: document.getElementById('reNetWorth'),
@@ -958,9 +1049,6 @@ function setupRealEstateEventListeners() {
         switchAppreciationTab('target');
         runRealEstateCalculation();
     });
-
-    // Action
-    reElements.calcRealEstateBtn.addEventListener('click', runRealEstateCalculation);
 
     // Enter key (Delegation for new section)
     reElements.realEstateSection.addEventListener('keypress', (e) => {
